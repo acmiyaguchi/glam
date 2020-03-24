@@ -1,4 +1,4 @@
-import produce from 'immer';
+import produce from "immer";
 
 export function groupBy(xs, key, transform = (_) => _) {
   return xs.reduce((rv, x) => {

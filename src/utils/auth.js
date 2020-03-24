@@ -1,9 +1,9 @@
-import createAuth0Client from '@auth0/auth0-spa-js';
+import createAuth0Client from "@auth0/auth0-spa-js";
 
 let auth0 = null;
 
 function fetchAuthConfig() {
-  return fetch('__BASE_DOMAIN__/api/v1/front-end-auth-config/');
+  return fetch("__BASE_DOMAIN__/api/v1/front-end-auth-config/");
 }
 
 async function configureClient() {
@@ -32,7 +32,7 @@ export function authenticate(successCallback) {
       withToken(successCallback);
     } else {
       const query = window.location.search;
-      if (query.includes('code=') && query.includes('state=')) {
+      if (query.includes("code=") && query.includes("state=")) {
         await auth0.handleRedirectCallback();
 
         // The Auth0 tutorial[1] recommends using window.history.replaceState at

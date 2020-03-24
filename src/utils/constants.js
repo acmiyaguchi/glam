@@ -1,4 +1,4 @@
-import { cubicOut as easing } from 'svelte/easing';
+import { cubicOut as easing } from "svelte/easing";
 
 const top = 32;
 
@@ -10,15 +10,15 @@ export const tween = {
 // descriptions for the individual charts.
 
 const niceAggregations = {
-  build_id: 'Build ID',
-  version: 'version',
+  build_id: "Build ID",
+  version: "version",
 };
 
 const niceMetricTypes = {
-  percentiles: 'Percentiles',
-  counts: 'Client Counts',
-  proportions: 'Proportions',
-  clientVolume: 'Client Volume',
+  percentiles: "Percentiles",
+  counts: "Client Counts",
+  proportions: "Proportions",
+  clientVolume: "Client Volume",
 };
 
 export function overTimeTitle(metricType, aggregationLevel) {
@@ -38,10 +38,15 @@ export function percentilesOverTimeDescription(aggregationLevel) {
   `;
 }
 
-export function proportionsOverTimeDescription(overTimePointMetricType, aggregationLevel) {
+export function proportionsOverTimeDescription(
+  overTimePointMetricType,
+  aggregationLevel
+) {
   return `
   Shows the ${overTimePointMetricType} of clients that have observed the 
-  following category / bin for the probe for each given ${niceAggregations[aggregationLevel]}.
+  following category / bin for the probe for each given ${
+    niceAggregations[aggregationLevel]
+  }.
 
   ${exploreInstructionsDescription(aggregationLevel)}
   `;
@@ -49,7 +54,9 @@ export function proportionsOverTimeDescription(overTimePointMetricType, aggregat
 
 export function clientVolumeOverTimeDescription(aggregationLevel) {
   return `
-  Shows the total volume of clients that have observed this probe for each given ${niceAggregations[aggregationLevel]}.
+  Shows the total volume of clients that have observed this probe for each given ${
+    niceAggregations[aggregationLevel]
+  }.
 
   ${exploreInstructionsDescription(aggregationLevel)}
   `;
@@ -65,7 +72,7 @@ export function compareDescription(chartName) {
 
 // layout constants for the explore charts
 
-const BG = 'var(--cool-gray-subtle)';
+const BG = "var(--cool-gray-subtle)";
 
 export const aggregationsOverTimeGraph = {
   width: 425,
@@ -74,7 +81,7 @@ export const aggregationsOverTimeGraph = {
   left: 60,
   bottom: 24,
   top,
-  borderColor: 'var(--cool-gray-400)',
+  borderColor: "var(--cool-gray-400)",
   insufficientDataAdjustment: 100, // amount of space to remove from graph when hidden
 };
 
@@ -104,7 +111,8 @@ export const explorerComparisonSmallMultiple = {
   borderColor: aggregationsOverTimeGraph.borderColor,
   bgColor: BG,
   // amount of width to add to graph when buildIDComparisonGraph is hidden
-  insufficientDataAdjustment: aggregationsOverTimeGraph.insufficientDataAdjustment,
+  insufficientDataAdjustment:
+    aggregationsOverTimeGraph.insufficientDataAdjustment,
 };
 
 export const compareClientCountsGraph = {

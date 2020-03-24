@@ -1,21 +1,21 @@
-import { derived, get } from 'svelte/store';
+import { derived, get } from "svelte/store";
 
-import { createCatColorMap } from 'udgl/data-graphics/utils/color-maps';
-import { createStore } from '../utils/create-store';
+import { createCatColorMap } from "udgl/data-graphics/utils/color-maps";
+import { createStore } from "../utils/create-store";
 
 // FIXME: take care of this dependency cycle.
-import telemetrySearch, { probeSet } from './telemetry-search'; // eslint-disable-line import/no-cycle
+import telemetrySearch, { probeSet } from "./telemetry-search"; // eslint-disable-line import/no-cycle
 
-import { getProbeData } from './api';
+import { getProbeData } from "./api";
 
-import CONFIG from '../config.json';
+import CONFIG from "../config.json";
 
-import { byKeyAndAggregation, getProbeViewType } from '../utils/probe-utils';
+import { byKeyAndAggregation, getProbeViewType } from "../utils/probe-utils";
 
-import { validate, noDuplicates, noResponse } from '../utils/data-validation';
+import { validate, noDuplicates, noResponse } from "../utils/data-validation";
 
 // TODO: move this to the new config.js when 'product' is added.
-const DEFAULT_PROBE_PROCESS = 'content';
+const DEFAULT_PROBE_PROCESS = "content";
 
 export function getField(fieldKey) {
   return CONFIG.fields[fieldKey];
@@ -36,7 +36,9 @@ export function getFieldValueMetadata(fieldKey, valueKey) {
 export function getFieldValueKey(fieldKey, valueKey) {
   const metadata = getFieldValueMetadata(fieldKey, valueKey);
   if (metadata && metadata.keyTransform) {
-    if (metadata.keyTransform === 'NULL') { return null; }
+    if (metadata.keyTransform === "NULL") {
+      return null;
+    }
   }
   return valueKey;
 }
@@ -44,13 +46,15 @@ export function getFieldValueKey(fieldKey, valueKey) {
 export function isValidFieldValue(fieldKey, valueKey) {
   const field = getField(fieldKey);
   if (field.skipValidation) return true;
-  return getFieldValues(fieldKey).map((fv) => {
-    // apply any key transforms that might need to happen.
-    if (fv.keyTransform) {
-      if (fv.keyTransform === 'NULL') return null;
-    }
-    return fv.key;
-  }).includes(valueKey);
+  return getFieldValues(fieldKey)
+    .map((fv) => {
+      // apply any key transforms that might need to happen.
+      if (fv.keyTransform) {
+        if (fv.keyTransform === "NULL") return null;
+      }
+      return fv.key;
+    })
+    .includes(valueKey);
 }
 
 export function getFieldValueLabel(fieldKey, valueKey) {
@@ -79,7 +83,7 @@ export function getFromQueryStringOrDefault(fieldKey, isMulti = false) {
   return value;
 }
 
-const pathParts = window.location.pathname.split('/');
+const pathParts = window.location.pathname.split("/");
 
 const initialState = {
   auth: {
@@ -87,25 +91,32 @@ const initialState = {
     token: undefined,
   },
   probe: {
-    name: pathParts[2] === 'probe' ? pathParts[3] : undefined,
+    name: pathParts[2] === "probe" ? pathParts[3] : undefined,
     description: undefined,
     audienceSize: 0,
     totalSize: 0,
     versions: [],
   },
-  dashboardMode: { }, // FIXME: applicationStatus or dashboardMode, not both.
-  aggregationLevel: getFromQueryStringOrDefault('aggregationLevel'),
-  channel: getFromQueryStringOrDefault('channel'),
-  os: getFromQueryString('os') || 'Windows',
-  versions: getFromQueryString('versions', true) || [],
-  process: getFromQueryString('process') || DEFAULT_PROBE_PROCESS,
+  dashboardMode: {}, // FIXME: applicationStatus or dashboardMode, not both.
+  aggregationLevel: getFromQueryStringOrDefault("aggregationLevel"),
+  channel: getFromQueryStringOrDefault("channel"),
+  os: getFromQueryString("os") || "Windows",
+  versions: getFromQueryString("versions", true) || [],
+  process: getFromQueryString("process") || DEFAULT_PROBE_PROCESS,
   searchIsActive: false,
-  searchQuery: '',
-  timeHorizon: getFromQueryString('timeHorizon') || 'MONTH',
-  visiblePercentiles: getFromQueryString('visiblePercentiles', true) || [95, 75, 50, 25, 5],
-  proportionMetricType: getFromQueryString('proportionMetricType') || 'proportions', //
-  activeBuckets: getFromQueryString('activeBuckets', true) || [],
-  applicationStatus: 'INITIALIZING', // FIXME: applicationStatus or dashboardMode, not both.
+  searchQuery: "",
+  timeHorizon: getFromQueryString("timeHorizon") || "MONTH",
+  visiblePercentiles: getFromQueryString("visiblePercentiles", true) || [
+    95,
+    75,
+    50,
+    25,
+    5,
+  ],
+  proportionMetricType:
+    getFromQueryString("proportionMetricType") || "proportions", //
+  activeBuckets: getFromQueryString("activeBuckets", true) || [],
+  applicationStatus: "INITIALIZING", // FIXME: applicationStatus or dashboardMode, not both.
   route: {},
 };
 
@@ -114,7 +125,7 @@ export const store = createStore(initialState);
 store.setProbe = (name) => {
   // get matching probe here
   const probe = get(probeSet).find((d) => d.name === name);
-  store.setField('probe', probe);
+  store.setField("probe", probe);
 };
 
 store.reset = () => {
@@ -125,26 +136,34 @@ store.reset = () => {
 };
 
 export const resetFilters = () => {
-  store.setField('channel', getDefaultFieldValue('channel'));
-  store.setField('os', getDefaultFieldValue('os'));
-  store.setField('aggregationLevel', getDefaultFieldValue('aggregationLevel'));
-  store.setField('process', getDefaultFieldValue('process'));
+  store.setField("channel", getDefaultFieldValue("channel"));
+  store.setField("os", getDefaultFieldValue("os"));
+  store.setField("aggregationLevel", getDefaultFieldValue("aggregationLevel"));
+  store.setField("process", getDefaultFieldValue("process"));
 };
 
 export const searchResults = derived(
-  [telemetrySearch, store], ([$telemetrySearch, $store]) => {
+  [telemetrySearch, store],
+  ([$telemetrySearch, $store]) => {
     const $query = $store.searchQuery;
     let resultSet = [];
     if ($telemetrySearch.loaded) {
-      resultSet = $telemetrySearch.search($query).map((r, searchID) => ({ ...r, searchID }));
+      resultSet = $telemetrySearch
+        .search($query)
+        .map((r, searchID) => ({ ...r, searchID }));
     }
     return { results: resultSet, total: $telemetrySearch.length };
-  },
+  }
 );
 
-export const hasDefaultControlFields = derived(store, ($store) => Object.values(CONFIG.fields)
-  .every((field) => (!field.values || (field.skipValidation === true))
-    || field.values[0].key === $store[field.key]));
+export const hasDefaultControlFields = derived(store, ($store) =>
+  Object.values(CONFIG.fields).every(
+    (field) =>
+      !field.values ||
+      field.skipValidation === true ||
+      field.values[0].key === $store[field.key]
+  )
+);
 
 // ///// probe querying infrastructure.
 
@@ -163,8 +182,8 @@ function getParamsForQueryString(obj) {
 }
 
 function getParamsForDataAPI(obj) {
-  const channelValue = getFieldValueKey('channel', obj.channel);
-  const osValue = getFieldValueKey('os', obj.os);
+  const channelValue = getFieldValueKey("channel", obj.channel);
+  const osValue = getFieldValueKey("os", obj.os);
   const params = getParamsForQueryString(obj);
   delete params.timeHorizon;
   delete params.proportionMetricType;
@@ -186,29 +205,43 @@ const toQueryStringPair = (k, v) => {
 function toQueryString(params) {
   const keys = Object.keys(params);
   keys.sort();
-  return keys.map((k) => toQueryStringPair(k, params[k])).join('&');
+  return keys.map((k) => toQueryStringPair(k, params[k])).join("&");
 }
 
 function probeSelected(probeValue) {
-  return probeValue !== undefined && probeValue !== 'null' && probeValue !== null;
+  return (
+    probeValue !== undefined && probeValue !== "null" && probeValue !== null
+  );
 }
 
 function paramsAreValid(params) {
-  return Object.entries(params)
-    .filter(([k]) => isField(k))
-    .every(([fieldKey, valueKey]) => isValidFieldValue(fieldKey, valueKey))
-    && probeSelected(params.probe);
+  return (
+    Object.entries(params)
+      .filter(([k]) => isField(k))
+      .every(([fieldKey, valueKey]) => isValidFieldValue(fieldKey, valueKey)) &&
+    probeSelected(params.probe)
+  );
 }
-
 
 export const datasetResponse = (level, key, data) => ({ level, key, data });
 
 // FIXME: let's remove this function. It's almost comically redundant.
-export function responseToData(data, probeClass = 'quantile', probeType, aggregationMethod = 'build_id') {
-  return byKeyAndAggregation(data, probeClass, aggregationMethod, { probeType }, { removeZeroes: probeType === 'histogram-enumerated' });
+export function responseToData(
+  data,
+  probeClass = "quantile",
+  probeType,
+  aggregationMethod = "build_id"
+) {
+  return byKeyAndAggregation(
+    data,
+    probeClass,
+    aggregationMethod,
+    { probeType },
+    { removeZeroes: probeType === "histogram-enumerated" }
+  );
 }
 
-const makeSortOrder = (latest, which = 'counts') => (a, b) => {
+const makeSortOrder = (latest, which = "counts") => (a, b) => {
   // get latest data point and see
   if (latest[which][a] < latest[which][b]) return 1;
   if (latest[which][a] >= latest[which][b]) return -1;
@@ -243,103 +276,110 @@ export function extractBucketMetadata(transformedData) {
 }
 
 export function isCategorical(probeType, probeKind) {
-  return ((probeType === 'histogram' && probeKind === 'enumerated')
-  || probeKind === 'categorical' || probeKind === 'flag' || probeKind === 'boolean');
+  return (
+    (probeType === "histogram" && probeKind === "enumerated") ||
+    probeKind === "categorical" ||
+    probeKind === "flag" ||
+    probeKind === "boolean"
+  );
 }
 
 export function fetchDataForGLAM(params) {
-  return getProbeData(params, store.getState().auth.token).then(
-    (payload) => {
-      // FIXME: this should not be reading from the store.
-      // the response is kind of messed up so once the API / data is fixed
-      // the response shluld consume from payload.response[0].metric_type.
-      // until then, however, we'll have to use the store values
-      // for the probeType and probeKind, since they're more accurate than
-      // what is in payload.response[0].metric_type.
-      const { probe, aggregationLevel } = store.getState();
+  return getProbeData(params, store.getState().auth.token).then((payload) => {
+    // FIXME: this should not be reading from the store.
+    // the response is kind of messed up so once the API / data is fixed
+    // the response shluld consume from payload.response[0].metric_type.
+    // until then, however, we'll have to use the store values
+    // for the probeType and probeKind, since they're more accurate than
+    // what is in payload.response[0].metric_type.
+    const { probe, aggregationLevel } = store.getState();
 
-      validate(
-        payload,
-        (p) => noResponse(p, probe.active),
-        (p) => noDuplicates(p, aggregationLevel),
-      );
+    validate(
+      payload,
+      (p) => noResponse(p, probe.active),
+      (p) => noDuplicates(p, aggregationLevel)
+    );
 
-      const probeType = probe.type;
-      const probeKind = probe.kind;
-      return {
-        data: responseToData(payload.response,
-          isCategorical(probeType, probeKind) ? 'proportion' : 'quantile',
-          `${probeType}-${probeKind}`, aggregationLevel),
-        probeType,
-        probeKind,
-      };
-    },
-  );
+    const probeType = probe.type;
+    const probeKind = probe.kind;
+    return {
+      data: responseToData(
+        payload.response,
+        isCategorical(probeType, probeKind) ? "proportion" : "quantile",
+        `${probeType}-${probeKind}`,
+        aggregationLevel
+      ),
+      probeType,
+      probeKind,
+    };
+  });
 }
 
 function intersection(a, b) {
   const bSet = new Set(b);
-  return new Set(
-    [...a].filter((x) => bSet.has(x)),
-  );
+  return new Set([...a].filter((x) => bSet.has(x)));
 }
 
 export function updateStoreAfterDataIsReceived({ data }) {
   const st = store.getState();
   // THIS WILL BE FALSE BECAUSE WE HAVE NOT RECEIVED THE PROBE DATA YET.
   const viewType = getProbeViewType(st.probe.type, st.probe.kind);
-  const isCategoricalTypeProbe = viewType === 'categorical';
+  const isCategoricalTypeProbe = viewType === "categorical";
   let etc = {};
   if (isCategoricalTypeProbe) {
     etc = extractBucketMetadata(data);
   }
 
-  if (isCategoricalTypeProbe) store.setField('activeBuckets', etc.initialBuckets);
+  if (isCategoricalTypeProbe)
+    store.setField("activeBuckets", etc.initialBuckets);
   return { data, viewType, ...etc };
 }
 
 const cache = {};
 let previousQuery;
 
-export const dataset = derived([store, probeSet], ([$store, $probeSet], set) => {
-  // FIXME: we have to check for whether probeSet is loaded before
-  // moving on. This is because the data fetch does _not_ return
-  // the proper information about probe types & kinds (specifically,
-  // enumerated histograms are coded as linear in the demo data set).
-  // This should be checked again once we have verified that the bug
-  // in the demo data is fixed.
-  if (!$probeSet) return;
+export const dataset = derived(
+  [store, probeSet],
+  ([$store, $probeSet], set) => {
+    // FIXME: we have to check for whether probeSet is loaded before
+    // moving on. This is because the data fetch does _not_ return
+    // the proper information about probe types & kinds (specifically,
+    // enumerated histograms are coded as linear in the demo data set).
+    // This should be checked again once we have verified that the bug
+    // in the demo data is fixed.
+    if (!$probeSet) return;
 
-  // We can't fetch anything until the user is authenticated
-  if (!$store.auth.isAuthenticated) return;
+    // We can't fetch anything until the user is authenticated
+    if (!$store.auth.isAuthenticated) return;
 
-  const params = getParamsForDataAPI($store);
-  const qs = toQueryString(params);
+    const params = getParamsForDataAPI($store);
+    const qs = toQueryString(params);
 
-  // // invalid parameters, probe selected.
-  if (!paramsAreValid(params) && probeSelected($store.probe.name)) {
-    const message = datasetResponse('ERROR', 'INVALID_PARAMETERS');
-    return message;
+    // // invalid parameters, probe selected.
+    if (!paramsAreValid(params) && probeSelected($store.probe.name)) {
+      const message = datasetResponse("ERROR", "INVALID_PARAMETERS");
+      return message;
+    }
+
+    // // no probe selected.
+    if (!probeSelected($store.probe.name)) {
+      const message = datasetResponse("INFO", "DEFAULT_VIEW");
+      return message;
+    }
+
+    if (!(qs in cache)) {
+      cache[qs] = fetchDataForGLAM(params);
+    }
+
+    // compare the previousQuery to the current one.
+    // if the actual query params have changed, let's update the
+    // data set.
+    if (previousQuery !== qs) {
+      previousQuery = qs;
+      set(cache[qs].then(updateStoreAfterDataIsReceived));
+    }
   }
-
-  // // no probe selected.
-  if (!probeSelected($store.probe.name)) {
-    const message = datasetResponse('INFO', 'DEFAULT_VIEW');
-    return message;
-  }
-
-  if (!(qs in cache)) {
-    cache[qs] = fetchDataForGLAM(params);
-  }
-
-  // compare the previousQuery to the current one.
-  // if the actual query params have changed, let's update the
-  // data set.
-  if (previousQuery !== qs) {
-    previousQuery = qs;
-    set(cache[qs].then(updateStoreAfterDataIsReceived));
-  }
-});
+);
 
 export const currentQuery = derived(store, ($store) => {
   const params = getParamsForQueryString($store);
